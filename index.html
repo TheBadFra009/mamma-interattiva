@@ -379,11 +379,11 @@ button:disabled{
     autocomplete="current-password"
    >
 
-   <button id="loginSubmit" type="button">Accedi</button>
+   <button id="loginSubmit">Accedi</button>
 
-   <button id="forgotPasswordBtn" type="button">Password dimenticata?</button>
+   <button id="forgotPassword" type="button">Password dimenticata?</button>
 
-   <button id="cancelLogin" type="button">Annulla</button>
+   <button id="cancelLogin">Annulla</button>
 
    <div id="loginMessage"></div>
 
@@ -567,24 +567,17 @@ document.getElementById("adminLoginBtn").addEventListener("click",()=>{
 });
 
 
-document.getElementById("cancelLogin").addEventListener("click",()=>{
-
- loginPanel.style.display = "none";
-
-});
-
-
-// Invio dell'email per reimpostare la password.
-document.getElementById("forgotPasswordBtn").addEventListener("click",async()=>{
+document.getElementById("forgotPassword").addEventListener("click",async()=>{
 
  const email = document.getElementById("adminEmail").value.trim();
 
  if(!email){
-  loginMessage.textContent = "Inserisci prima l'indirizzo email dell'amministratore.";
+  loginMessage.textContent = "Inserisci prima il tuo indirizzo email.";
+  document.getElementById("adminEmail").focus();
   return;
  }
 
- const button = document.getElementById("forgotPasswordBtn");
+ const button = document.getElementById("forgotPassword");
  button.disabled = true;
  button.textContent = "Invio in corso...";
  loginMessage.textContent = "";
@@ -596,14 +589,24 @@ document.getElementById("forgotPasswordBtn").addEventListener("click",async()=>{
 
   if(error) throw error;
 
-  loginMessage.textContent = "Email di recupero inviata. Apri il messaggio e clicca sul link per scegliere una nuova password.";
+  loginMessage.style.color = "#b9ffd2";
+  loginMessage.textContent = "Se l'indirizzo è registrato, riceverai un'email con il link per reimpostare la password. Controlla anche la cartella spam.";
+
  }catch(error){
-  console.error("Errore invio recupero password:",error);
-  loginMessage.textContent = "Non è stato possibile inviare l'email. Controlla l'indirizzo e le impostazioni di Supabase.";
+  console.error("Errore richiesta recupero password:",error);
+  loginMessage.style.color = "#ffb5c5";
+  loginMessage.textContent = "Non è stato possibile inviare l'email. Controlla l'indirizzo e riprova.";
  }finally{
   button.disabled = false;
   button.textContent = "Password dimenticata?";
  }
+
+});
+
+
+document.getElementById("cancelLogin").addEventListener("click",()=>{
+
+ loginPanel.style.display = "none";
 
 });
 
@@ -694,16 +697,7 @@ function showPasswordRecovery(){
 function closePasswordRecovery(){
  recoveryScreen.classList.remove("show");
  recoveryForm.reset();
- // Rimuove i parametri temporanei del link senza ricaricare la pagina.
  history.replaceState(null, document.title, window.location.pathname);
-}
-
-let recoveryScreenShown = false;
-
-function showPasswordRecoveryOnce(){
- if(recoveryScreenShown) return;
- recoveryScreenShown = true;
- showPasswordRecovery();
 }
 
 supabaseClient.auth.onAuthStateChange((event,session)=>{
@@ -713,7 +707,7 @@ supabaseClient.auth.onAuthStateChange((event,session)=>{
  updateAdminInterface();
 
  if(event === "PASSWORD_RECOVERY"){
-  showPasswordRecoveryOnce();
+  showPasswordRecovery();
  }
 
 });
@@ -772,28 +766,16 @@ async function initializeAuthentication(){
   await supabaseClient.auth.getSession();
 
  if(error){
-  console.error("Errore inizializzazione autenticazione:",error);
+
+  console.error(error);
+
   return;
+
  }
 
  adminSession = data.session;
+
  updateAdminInterface();
-
- // Secondo controllo: se l'URL indica un recupero password,
- // mostra il modulo solo quando Supabase ha creato la sessione.
- const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
- const queryParams = new URLSearchParams(window.location.search);
-
- if(
-  hashParams.get("type") === "recovery" ||
-  queryParams.get("type") === "recovery"
- ){
-  if(data.session){
-   showPasswordRecoveryOnce();
-  }else{
-   console.warn("Link di recupero rilevato, ma Supabase non ha creato una sessione.");
-  }
- }
 
 }
 
