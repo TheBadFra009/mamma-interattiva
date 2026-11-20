@@ -592,14 +592,14 @@ document.getElementById("forgotPassword").addEventListener("click",async()=>{
   loginMessage.style.color = "#b9ffd2";
   loginMessage.textContent = "Se l'indirizzo è registrato, riceverai un'email con il link per reimpostare la password. Controlla anche la cartella spam.";
 
- }catch(error){
-  console.error("Errore richiesta recupero password:",error);
-  loginMessage.style.color = "#ffb5c5";
-  loginMessage.textContent = "Non è stato possibile inviare l'email. Controlla l'indirizzo e riprova.";
- }finally{
-  button.disabled = false;
-  button.textContent = "Password dimenticata?";
- }
+   }catch(error){
+      console.error("Errore richiesta recupero password:",error);
+
+      loginMessage.style.color = "#ffb5c5";
+   
+      loginMessage.textContent =
+      "Errore Supabase: " + (error.message || "Errore sconosciuto");
+  }
 
 });
 
