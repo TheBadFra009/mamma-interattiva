@@ -583,6 +583,51 @@ document.getElementById("cancelLogin").addEventListener("click",()=>{
 
 });
 
+ // ==================================================
+// RECUPERO PASSWORD
+// ==================================================
+
+document.getElementById("forgotPasswordBtn").addEventListener("click",async()=>{
+
+ const email = document.getElementById("adminEmail").value.trim();
+
+ if(!email){
+  loginMessage.textContent = "Inserisci prima il tuo indirizzo email.";
+  return;
+ }
+
+ const button = document.getElementById("forgotPasswordBtn");
+
+ button.disabled = true;
+ button.textContent = "Invio in corso...";
+
+ loginMessage.textContent = "";
+
+ try{
+
+  const {error} = await supabaseClient.auth.resetPasswordForEmail(email,{
+   redirectTo: window.location.origin + window.location.pathname
+  });
+
+  if(error) throw error;
+
+  loginMessage.textContent = "Email inviata! Controlla la tua casella di posta.";
+
+ }catch(error){
+
+  console.error("Errore recupero password:",error);
+
+  loginMessage.textContent = "Errore nell'invio dell'email. Riprova.";
+
+ }finally{
+
+  button.disabled = false;
+  button.textContent = "Password dimenticata?";
+
+ }
+
+});
+
 
 document.getElementById("loginSubmit").addEventListener("click",async()=>{
 
@@ -661,6 +706,7 @@ const recoveryDone = document.getElementById("recoveryDone");
 function showPasswordRecovery(){
  recoveryScreen.classList.add("show");
  recoveryMessage.textContent = "";
+ recoveryForm.style.display = "block";
  recoveryMessage.classList.remove("success");
  recoveryDone.style.display = "none";
  document.getElementById("newPassword").value = "";
@@ -1219,7 +1265,19 @@ const heartPoints=new THREE.Points(
 );
 
 heartGroup.add(heartPoints);
+const heartHitArea=new THREE.Mesh(
+ new THREE.SphereGeometry(3.25,24,24),
+ new THREE.MeshBasicMaterial({
+  transparent:true,
+  opacity:0,
+  colorWrite:false,
+  depthWrite:false
+ })
+);
 
+heartHitArea.position.set(0,7.3,0);
+
+heartGroup.add(heartHitArea);
 const heartGlow=new THREE.PointLight(0xff174d,1.2,20);
 
 heartGlow.position.set(0,7.3,0);
