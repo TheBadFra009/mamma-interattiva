@@ -1225,6 +1225,21 @@ heartGlow.position.set(0,7.3,0);
 heartGroup.add(heartGlow);
 
 
+// AREA CLICCABILE DEL CUORE
+const heartHitArea=new THREE.Mesh(
+ new THREE.SphereGeometry(3.25,24,24),
+ new THREE.MeshBasicMaterial({
+  transparent:true,
+  opacity:0,
+  colorWrite:false,
+  depthWrite:false
+ })
+);
+
+heartHitArea.position.set(0,7.3,0);
+heartGroup.add(heartHitArea);
+
+
 // ==================================================
 // ETICHETTE DEI PIANETI
 // ==================================================
@@ -1498,7 +1513,9 @@ let photoExists=false;
 
 function getPhotoPath(index){
 
- return "pianeta-"+(index+1)+".jpg";
+ return index==="cuore"
+  ? "cuore.jpg"
+  : "pianeta-"+(index+1)+".jpg";
 
 }
 
@@ -1569,6 +1586,26 @@ function openPlanet(index){
  modal.classList.add("open");
 
  loadPlanetPhoto(index);
+
+ updateAdminInterface();
+
+}
+
+
+// APERTURA DEL CUORE
+
+function openHeart(){
+
+ selectedPlanet="cuore";
+
+ modalTitle.textContent="Il nostro cuore";
+
+ modalDedication.textContent=
+  "Il cuore del nostro universo: la nostra famiglia.";
+
+ modal.classList.add("open");
+
+ loadPlanetPhoto("cuore");
 
  updateAdminInterface();
 
@@ -1653,7 +1690,7 @@ fileInput.addEventListener("change",async e=>{
 
  const file=e.target.files&&e.target.files[0];
 
- if(!file||selectedPlanet<0)return;
+ if(!file||selectedPlanet===-1)return;
 
  if(!adminSession){
 
@@ -1729,7 +1766,7 @@ fileInput.addEventListener("change",async e=>{
 
 removePhoto.addEventListener("click",async()=>{
 
- if(!adminSession||selectedPlanet<0)return;
+ if(!adminSession||selectedPlanet===-1)return;
 
  if(!confirm("Vuoi davvero eliminare questa fotografia?"))return;
 
@@ -1802,6 +1839,8 @@ const pointer=new THREE.Vector2();
 
 let hoveredPlanet=null;
 
+let hoveredHeart=false;
+
 let dragging=false;
 
 let lastX=0;
@@ -1827,6 +1866,10 @@ renderer.domElement.addEventListener("pointermove",e=>{
  if(!dragging){
 
   raycaster.setFromCamera(pointer,camera);
+
+  const heartHits=raycaster.intersectObject(heartHitArea,false);
+
+  hoveredHeart=heartHits.length>0;
 
   const intersections=raycaster.intersectObjects(planets,false);
 
@@ -1860,6 +1903,8 @@ renderer.domElement.addEventListener("pointerleave",()=>{
 
  hoveredPlanet=null;
 
+ hoveredHeart=false;
+
 });
 
 renderer.domElement.addEventListener("pointerdown",e=>{
@@ -1891,6 +1936,16 @@ renderer.domElement.addEventListener("pointerup",e=>{
   pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;
 
   raycaster.setFromCamera(pointer,camera);
+
+  const heartHits=raycaster.intersectObject(heartHitArea,false);
+
+  if(heartHits.length){
+
+   openHeart();
+
+   return;
+
+  }
 
   const hits=raycaster.intersectObjects(planets,false);
 
