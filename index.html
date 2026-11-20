@@ -178,9 +178,26 @@ button:disabled{
 }
 
 #modalTitle{
- font-size:23px;
- margin:0 0 15px;
- font-weight:normal
+ font-size:clamp(25px,4vw,32px);
+ margin:0 0 10px;
+ font-weight:normal;
+ color:#fff2d8;
+ text-shadow:0 0 12px rgba(255,190,220,.65)
+}
+
+#modalDedication{
+ max-width:720px;
+ margin:0 auto 18px;
+ padding:14px 18px;
+ border:1px solid rgba(255,215,160,.55);
+ border-radius:14px;
+ background:linear-gradient(135deg,rgba(37,25,67,.96),rgba(12,15,43,.98));
+ color:#fff;
+ font-size:clamp(18px,2.5vw,25px);
+ line-height:1.5;
+ text-align:center;
+ text-shadow:0 0 10px rgba(220,175,255,.55);
+ box-shadow:0 0 20px rgba(190,130,255,.18)
 }
 
 #photoPreview{
@@ -301,11 +318,9 @@ button:disabled{
  font:13px Arial,sans-serif;
 }
 #recoveryMessage.success{color:#b9ffd2}
-@media(max-width:600px){
- .recovery-box{padding:22px}
-}
 
 @media(max-width:600px){
+ .recovery-box{padding:22px}
  #hint{max-width:65%;line-height:1.5}
  #controls{right:10px;bottom:12px;gap:5px}
  #controls button{width:38px;height:38px}
@@ -347,6 +362,8 @@ button:disabled{
 
   <h2 id="modalTitle">Il nostro ricordo</h2>
 
+  <p id="modalDedication"></p>
+
   <img id="photoPreview" alt="Foto del ricordo">
 
   <div id="photoActions">
@@ -380,8 +397,6 @@ button:disabled{
    >
 
    <button id="loginSubmit">Accedi</button>
-
-   <button id="forgotPassword" type="button">Password dimenticata?</button>
 
    <button id="cancelLogin">Annulla</button>
 
@@ -434,21 +449,14 @@ const SUPABASE_URL =
  "https://xywxexdiymkdswwxiuhl.supabase.co";
 
 const SUPABASE_KEY =
- "sb_publishable_XzgVGOx6HcSJi_dsu58OHg_i4KxubSW";
+ "sb_publishable_XzgVOx6HcSJi_dsu58OHg_i4KxubSW";
 
 const BUCKET = "foto-mamma";
 
 const supabaseClient =
  window.supabase.createClient(
   SUPABASE_URL,
-  SUPABASE_KEY,
-  {
-   auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-   }
-  }
+  SUPABASE_KEY
  );
 
 let adminSession = null;
@@ -563,43 +571,6 @@ document.getElementById("adminLoginBtn").addEventListener("click",()=>{
  loginMessage.textContent = "";
 
  loginPanel.style.display = "block";
-
-});
-
-
-document.getElementById("forgotPassword").addEventListener("click",async()=>{
-
- const email = document.getElementById("adminEmail").value.trim();
-
- if(!email){
-  loginMessage.textContent = "Inserisci prima il tuo indirizzo email.";
-  document.getElementById("adminEmail").focus();
-  return;
- }
-
- const button = document.getElementById("forgotPassword");
- button.disabled = true;
- button.textContent = "Invio in corso...";
- loginMessage.textContent = "";
-
- try{
-  const {error} = await supabaseClient.auth.resetPasswordForEmail(email,{
-   redirectTo: window.location.origin + window.location.pathname
-  });
-
-  if(error) throw error;
-
-  loginMessage.style.color = "#b9ffd2";
-  loginMessage.textContent = "Se l'indirizzo è registrato, riceverai un'email con il link per reimpostare la password. Controlla anche la cartella spam.";
-
-   }catch(error){
-      console.error("Errore richiesta recupero password:",error);
-
-      loginMessage.style.color = "#ffb5c5";
-   
-      loginMessage.textContent =
-      "Errore Supabase: " + (error.message || "Errore sconosciuto");
-  }
 
 });
 
@@ -1263,26 +1234,26 @@ function createLabel(text){
  const canvas=document.createElement("canvas");
 
  canvas.width=768;
- canvas.height=220;
+ canvas.height=260;
 
  const ctx=canvas.getContext("2d");
 
- ctx.clearRect(0,0,768,220);
+ ctx.clearRect(0,0,768,260);
 
- const gradient=ctx.createLinearGradient(0,0,768,220);
+ const gradient=ctx.createLinearGradient(0,0,768,260);
 
- gradient.addColorStop(0,"rgba(8,12,38,0.90)");
- gradient.addColorStop(.5,"rgba(18,15,48,0.96)");
- gradient.addColorStop(1,"rgba(8,12,38,0.90)");
+ gradient.addColorStop(0,"rgba(8,12,38,0.94)");
+ gradient.addColorStop(.5,"rgba(18,15,48,0.98)");
+ gradient.addColorStop(1,"rgba(8,12,38,0.94)");
 
  ctx.fillStyle=gradient;
 
- roundedRect(ctx,12,12,744,196,35);
+ roundedRect(ctx,8,8,752,244,38);
 
  ctx.fill();
 
- ctx.strokeStyle="rgba(255,215,150,0.9)";
- ctx.lineWidth=4;
+ ctx.strokeStyle="rgba(255,215,150,1)";
+ ctx.lineWidth=6;
 
  ctx.stroke();
 
@@ -1290,10 +1261,10 @@ function createLabel(text){
  ctx.textBaseline="middle";
 
  ctx.fillStyle="#ffffff";
- ctx.font="bold 29px Georgia";
+ ctx.font="bold 38px Georgia";
 
  ctx.shadowColor="#ffffff";
- ctx.shadowBlur=7;
+ ctx.shadowBlur=10;
 
  const words=text.split(" ");
 
@@ -1320,9 +1291,9 @@ function createLabel(text){
 
  if(line)lines.push(line);
 
- const lineHeight=43;
+ const lineHeight=48;
 
- const startY=110-((lines.length-1)*lineHeight)/2;
+ const startY=130-((lines.length-1)*lineHeight)/2;
 
  lines.forEach((part,i)=>{
   ctx.fillText(part,384,startY+i*lineHeight);
@@ -1338,7 +1309,7 @@ function createLabel(text){
   })
  );
 
- sprite.scale.set(4.6,1.32,1);
+ sprite.scale.set(5.5,1.85,1);
 
  return sprite;
 
@@ -1516,6 +1487,7 @@ const modal=document.getElementById("photoModal");
 const preview=document.getElementById("photoPreview");
 
 const modalTitle=document.getElementById("modalTitle");
+const modalDedication=document.getElementById("modalDedication");
 
 const fileInput=document.getElementById("fileInput");
 
@@ -1524,17 +1496,12 @@ let selectedPlanet=-1;
 let photoExists=false;
 
 
-// Ogni pianeta ha un'immagine JPEG con nome fisso.
-// Questo permette di recuperare sempre la stessa foto.
-
 function getPhotoPath(index){
 
  return "pianeta-"+(index+1)+".jpg";
 
 }
 
-
-// Recupera l'indirizzo pubblico della fotografia.
 
 function getPublicPhotoUrl(index){
 
@@ -1547,8 +1514,6 @@ function getPublicPhotoUrl(index){
 
 }
 
-
-// Mostra la fotografia del pianeta.
 
 function loadPlanetPhoto(index){
 
@@ -1590,7 +1555,7 @@ function loadPlanetPhoto(index){
 }
 
 
-// Apertura del pianeta.
+// APERTURA DEL PIANETA
 
 function openPlanet(index){
 
@@ -1598,6 +1563,8 @@ function openPlanet(index){
 
  modalTitle.textContent=
   "Il nostro ricordo";
+
+ modalDedication.textContent=dedications[index];
 
  modal.classList.add("open");
 
@@ -1611,9 +1578,6 @@ function openPlanet(index){
 // ==================================================
 // CONVERSIONE DELLE FOTO
 // ==================================================
-
-// Convertiamo le immagini in JPEG per avere un formato
-// unico e un nome fisso per ogni pianeta.
 
 async function convertToJpeg(file){
 
@@ -2049,7 +2013,7 @@ function animate(){
   p.scale.setScalar(newScale);
 
 
-  // Movimento esattamente sulle orbite
+  // Movimento sulle orbite
 
   const a =
    p.userData.angle+
