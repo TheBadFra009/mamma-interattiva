@@ -1,0 +1,2085 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Per la nostra mamma ❤️</title>
+
+<style>
+*{box-sizing:border-box}
+
+html,body{
+ margin:0;
+ width:100%;
+ height:100%;
+ overflow:hidden;
+ background:#03000a;
+ color:#fff;
+ font-family:Georgia,serif;
+}
+
+canvas{display:block}
+#scene{position:fixed;inset:0}
+
+#intro{
+ position:fixed;
+ inset:0;
+ z-index:10;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ text-align:center;
+ padding:24px;
+ background:radial-gradient(ellipse at center,#17102f 0%,#080516 48%,#020108 100%);
+ transition:opacity 1.2s ease,visibility 1.2s ease
+}
+
+#intro.hide{
+ opacity:0;
+ visibility:hidden;
+ pointer-events:none
+}
+
+.intro-heart{
+ font-size:clamp(48px,9vw,90px);
+ color:#ff174d;
+ text-shadow:0 0 18px #ff174d,0 0 45px #a00035;
+ animation:beat 1.4s infinite
+}
+
+@keyframes beat{
+ 0%,100%{transform:scale(1)}
+ 50%{transform:scale(1.12)}
+}
+
+#intro h1{
+ font-size:clamp(28px,5vw,54px);
+ font-weight:normal;
+ margin:12px 0 8px;
+ text-shadow:0 0 20px #e6b9ff
+}
+
+#intro p{
+ font-size:clamp(13px,2vw,18px);
+ letter-spacing:4px;
+ color:#d6c5ef;
+ margin:8px 0 30px
+}
+
+button{
+ font-family:inherit;
+ cursor:pointer;
+ color:#fff;
+ border:1px solid rgba(255,220,170,.7);
+ background:linear-gradient(135deg,rgba(47,31,83,.92),rgba(12,15,43,.95));
+ padding:12px 20px;
+ border-radius:30px;
+ box-shadow:0 0 18px rgba(190,130,255,.2);
+ transition:.2s
+}
+
+button:hover{
+ transform:translateY(-2px);
+ box-shadow:0 0 24px rgba(220,170,255,.45)
+}
+
+button:disabled{
+ opacity:.5;
+ cursor:wait;
+ transform:none
+}
+
+#heading{
+ position:fixed;
+ z-index:2;
+ top:22px;
+ left:0;
+ width:100%;
+ text-align:center;
+ pointer-events:none;
+ opacity:0;
+ transition:opacity 1s
+}
+
+#heading.show{opacity:1}
+
+#heading h1{
+ font-weight:normal;
+ font-size:clamp(22px,3.4vw,38px);
+ margin:0;
+ text-shadow:0 0 15px #cba6ff
+}
+
+#heading div{
+ font-size:11px;
+ letter-spacing:5px;
+ color:#d9c9f0;
+ margin-top:7px
+}
+
+#controls{
+ position:fixed;
+ z-index:3;
+ right:18px;
+ bottom:18px;
+ display:flex;
+ gap:8px;
+ opacity:0;
+ transition:opacity 1s
+}
+
+#controls.show{opacity:1}
+
+#controls button{
+ width:42px;
+ height:42px;
+ padding:0;
+ font-size:20px
+}
+
+#hint{
+ position:fixed;
+ z-index:2;
+ bottom:25px;
+ left:18px;
+ color:#cfc2e4;
+ font:12px Arial,sans-serif;
+ opacity:0;
+ transition:opacity 1s;
+ pointer-events:none
+}
+
+#hint.show{opacity:.8}
+
+#photoModal{
+ position:fixed;
+ inset:0;
+ z-index:20;
+ display:none;
+ align-items:center;
+ justify-content:center;
+ background:rgba(0,0,0,.82);
+ padding:20px
+}
+
+#photoModal.open{display:flex}
+
+.modal-box{
+ width:min(90vw,850px);
+ max-height:90vh;
+ overflow-y:auto;
+ text-align:center;
+ background:linear-gradient(145deg,#17132e,#080817);
+ border:1px solid rgba(255,215,160,.55);
+ border-radius:20px;
+ padding:20px;
+ box-shadow:0 0 40px #30164f
+}
+
+#modalTitle{
+ font-size:23px;
+ margin:0 0 15px;
+ font-weight:normal
+}
+
+#photoPreview{
+ display:none;
+ max-width:100%;
+ max-height:50vh;
+ object-fit:contain;
+ border-radius:12px;
+ margin:0 auto 16px
+}
+
+#photoActions{
+ display:flex;
+ flex-wrap:wrap;
+ justify-content:center;
+ gap:10px
+}
+
+#fileInput{display:none}
+
+#loginPanel{
+ display:none;
+ margin:18px auto 0;
+ max-width:350px;
+}
+
+#loginPanel input{
+ display:block;
+ width:100%;
+ padding:12px;
+ margin:10px 0;
+ border-radius:10px;
+ border:1px solid rgba(220,180,255,.5);
+ background:#100d20;
+ color:white;
+ font-size:15px;
+ outline:none;
+}
+
+#loginPanel input:focus{
+ border-color:#d8aaff;
+ box-shadow:0 0 12px rgba(190,130,255,.3);
+}
+
+#adminActions{
+ display:none;
+ flex-wrap:wrap;
+ justify-content:center;
+ gap:10px;
+ margin-top:12px;
+}
+
+#adminStatus{
+ font:13px Arial,sans-serif;
+ color:#d9c9f0;
+ margin:12px 0;
+}
+
+#loginMessage{
+ font:13px Arial,sans-serif;
+ color:#ffb5c5;
+ margin-top:10px;
+}
+
+#choosePhoto,#removePhoto{
+ display:none;
+}
+
+#recoveryScreen{
+ position:fixed;
+ inset:0;
+ z-index:100;
+ display:none;
+ align-items:center;
+ justify-content:center;
+ padding:20px;
+ background:radial-gradient(ellipse at center,#17102f 0%,#080516 55%,#020108 100%);
+}
+#recoveryScreen.show{display:flex}
+.recovery-box{
+ width:min(92vw,430px);
+ padding:28px;
+ text-align:center;
+ background:linear-gradient(145deg,#17132e,#080817);
+ border:1px solid rgba(255,215,160,.65);
+ border-radius:20px;
+ box-shadow:0 0 40px #30164f;
+}
+.recovery-box h2{
+ font-weight:normal;
+ font-size:clamp(24px,4vw,32px);
+ margin:0 0 12px;
+}
+.recovery-box p{
+ color:#d9c9f0;
+ font:14px/1.5 Arial,sans-serif;
+}
+.recovery-box input{
+ display:block;
+ width:100%;
+ padding:13px;
+ margin:12px 0;
+ border-radius:10px;
+ border:1px solid rgba(220,180,255,.5);
+ background:#100d20;
+ color:white;
+ font-size:15px;
+ outline:none;
+}
+.recovery-box input:focus{
+ border-color:#d8aaff;
+ box-shadow:0 0 12px rgba(190,130,255,.3);
+}
+#recoveryMessage{
+ min-height:20px;
+ margin:12px 0;
+ color:#ffb5c5;
+ font:13px Arial,sans-serif;
+}
+#recoveryMessage.success{color:#b9ffd2}
+@media(max-width:600px){
+ .recovery-box{padding:22px}
+}
+
+@media(max-width:600px){
+ #hint{max-width:65%;line-height:1.5}
+ #controls{right:10px;bottom:12px;gap:5px}
+ #controls button{width:38px;height:38px}
+ .modal-box{padding:16px}
+}
+</style>
+</head>
+
+<body>
+
+<div id="scene"></div>
+
+<div id="intro">
+ <div class="intro-heart">♥</div>
+ <h1>Per la nostra mamma</h1>
+ <p>IL NOSTRO UNIVERSO</p>
+ <button id="enterBtn">Entra nel nostro universo</button>
+</div>
+
+<div id="heading">
+ <h1>Per la nostra mamma ❤️</h1>
+ <div>IL NOSTRO UNIVERSO</div>
+</div>
+
+<div id="hint">
+ Trascina per ruotare · Usa la rotellina per avvicinarti<br>
+ Passa sopra un pianeta per ingrandirlo · Clicca per scoprire la dedica
+</div>
+
+<div id="controls">
+ <button id="zoomIn" title="Avvicina">+</button>
+ <button id="zoomOut" title="Allontana">−</button>
+ <button id="reset" title="Reimposta visuale">↺</button>
+ <button id="musicToggle" title="Metti in pausa la musica">♫</button>
+</div>
+
+<div id="photoModal">
+ <div class="modal-box">
+
+  <h2 id="modalTitle">Il nostro ricordo</h2>
+
+  <img id="photoPreview" alt="Foto del ricordo">
+
+  <div id="photoActions">
+
+   <button id="adminLoginBtn">Accesso amministratore</button>
+
+   <button id="choosePhoto">Aggiungi / cambia foto</button>
+
+   <button id="removePhoto">Rimuovi foto</button>
+
+   <button id="closeModal">Chiudi</button>
+
+  </div>
+
+  <div id="loginPanel">
+
+   <p>Accesso riservato all'amministratore</p>
+
+   <input
+    type="email"
+    id="adminEmail"
+    placeholder="Indirizzo email"
+    autocomplete="username"
+   >
+
+   <input
+    type="password"
+    id="adminPassword"
+    placeholder="Password"
+    autocomplete="current-password"
+   >
+
+   <button id="loginSubmit">Accedi</button>
+
+   <button id="cancelLogin">Annulla</button>
+
+   <div id="loginMessage"></div>
+
+  </div>
+
+  <div id="adminActions">
+
+   <p id="adminStatus">Modalità amministratore attiva</p>
+
+   <button id="logoutBtn">Esci dall'amministratore</button>
+
+  </div>
+
+  <input id="fileInput" type="file" accept="image/*">
+
+ </div>
+</div>
+
+<div id="recoveryScreen" role="dialog" aria-modal="true" aria-labelledby="recoveryTitle">
+ <div class="recovery-box">
+  <h2 id="recoveryTitle">Reimposta password</h2>
+  <p>Inserisci la nuova password per il tuo account amministratore e confermala.</p>
+  <form id="recoveryForm">
+   <input type="password" id="newPassword" placeholder="Nuova password" autocomplete="new-password" minlength="6" required>
+   <input type="password" id="confirmNewPassword" placeholder="Conferma nuova password" autocomplete="new-password" minlength="6" required>
+   <button id="saveNewPassword" type="submit">Salva nuova password</button>
+  </form>
+  <div id="recoveryMessage" aria-live="polite"></div>
+  <button id="recoveryDone" type="button" style="display:none">Torna al sito</button>
+ </div>
+</div>
+
+<audio id="backgroundMusic" src="./musica.mp3" loop preload="auto"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+(() => {
+"use strict";
+
+
+// ==================================================
+// SUPABASE
+// ==================================================
+
+const SUPABASE_URL =
+ "https://xywxexdiymkdswwxiuhl.supabase.co";
+
+const SUPABASE_KEY =
+ "sb_publishable_XzgVOx6HcSJi_dsu58OHg_i4KxubSW";
+
+const BUCKET = "foto-mamma";
+
+const supabaseClient =
+ window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+ );
+
+let adminSession = null;
+
+
+// ==================================================
+// MUSICA
+// ==================================================
+
+const backgroundMusic = document.getElementById("backgroundMusic");
+const musicToggle = document.getElementById("musicToggle");
+
+backgroundMusic.volume = 0.5;
+
+let musicPlaying = false;
+
+async function startMusic(){
+
+ try{
+
+  await backgroundMusic.play();
+
+  musicPlaying = true;
+
+  musicToggle.textContent = "♫";
+  musicToggle.title = "Metti in pausa la musica";
+
+ }catch(error){
+
+  musicPlaying = false;
+
+  alert("Non riesco a riprodurre la musica. Controlla che musica.mp3 sia nella stessa cartella del file HTML.");
+
+ }
+}
+
+musicToggle.addEventListener("click",async()=>{
+
+ if(musicPlaying){
+
+  backgroundMusic.pause();
+
+  musicPlaying = false;
+
+  musicToggle.textContent = "▶";
+  musicToggle.title = "Riprendi la musica";
+
+ }else{
+
+  await startMusic();
+
+ }
+
+});
+
+
+// ==================================================
+// AUTENTICAZIONE AMMINISTRATORE
+// ==================================================
+
+const adminLoginBtn =
+ document.getElementById("adminLoginBtn");
+
+const loginPanel =
+ document.getElementById("loginPanel");
+
+const adminActions =
+ document.getElementById("adminActions");
+
+const loginMessage =
+ document.getElementById("loginMessage");
+
+const choosePhoto =
+ document.getElementById("choosePhoto");
+
+const removePhoto =
+ document.getElementById("removePhoto");
+
+
+function updateAdminInterface(){
+
+ const loggedIn = !!adminSession;
+
+ adminLoginBtn.style.display =
+  loggedIn ? "none" : "inline-block";
+
+ adminActions.style.display =
+  loggedIn ? "flex" : "none";
+
+ choosePhoto.style.display =
+  loggedIn ? "inline-block" : "none";
+
+ loginPanel.style.display = "none";
+
+ updateRemoveButton();
+
+}
+
+
+function updateRemoveButton(){
+
+ removePhoto.style.display =
+  adminSession && photoExists
+   ? "inline-block"
+   : "none";
+
+}
+
+
+document.getElementById("adminLoginBtn").addEventListener("click",()=>{
+
+ loginMessage.textContent = "";
+
+ loginPanel.style.display = "block";
+
+});
+
+
+document.getElementById("cancelLogin").addEventListener("click",()=>{
+
+ loginPanel.style.display = "none";
+
+});
+
+
+document.getElementById("loginSubmit").addEventListener("click",async()=>{
+
+ const email =
+  document.getElementById("adminEmail").value.trim();
+
+ const password =
+  document.getElementById("adminPassword").value;
+
+ if(!email || !password){
+
+  loginMessage.textContent = "Inserisci email e password.";
+
+  return;
+
+ }
+
+ const button =
+  document.getElementById("loginSubmit");
+
+ button.disabled = true;
+ button.textContent = "Accesso in corso...";
+
+ loginMessage.textContent = "";
+
+ try{
+
+  const {data,error} =
+   await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+   });
+
+  if(error)throw error;
+
+  adminSession = data.session;
+
+  updateAdminInterface();
+
+  document.getElementById("adminPassword").value = "";
+
+ }catch(error){
+
+  loginMessage.textContent =
+   "Accesso non riuscito. Controlla email e password.";
+
+  console.error(error);
+
+ }finally{
+
+  button.disabled = false;
+  button.textContent = "Accedi";
+
+ }
+
+});
+
+
+document.getElementById("logoutBtn").addEventListener("click",async()=>{
+
+ await supabaseClient.auth.signOut();
+
+ adminSession = null;
+
+ updateAdminInterface();
+
+});
+
+
+const recoveryScreen = document.getElementById("recoveryScreen");
+const recoveryForm = document.getElementById("recoveryForm");
+const recoveryMessage = document.getElementById("recoveryMessage");
+const saveNewPassword = document.getElementById("saveNewPassword");
+const recoveryDone = document.getElementById("recoveryDone");
+
+function showPasswordRecovery(){
+ recoveryScreen.classList.add("show");
+ recoveryMessage.textContent = "";
+ recoveryMessage.classList.remove("success");
+ recoveryDone.style.display = "none";
+ document.getElementById("newPassword").value = "";
+ document.getElementById("confirmNewPassword").value = "";
+}
+
+function closePasswordRecovery(){
+ recoveryScreen.classList.remove("show");
+ recoveryForm.reset();
+ // Rimuove i parametri temporanei del link senza ricaricare la pagina.
+ history.replaceState(null, document.title, window.location.pathname);
+}
+
+supabaseClient.auth.onAuthStateChange((event,session)=>{
+
+ adminSession = session;
+
+ updateAdminInterface();
+
+ if(event === "PASSWORD_RECOVERY"){
+  showPasswordRecovery();
+ }
+
+});
+
+recoveryForm.addEventListener("submit",async(event)=>{
+ event.preventDefault();
+
+ const newPassword = document.getElementById("newPassword").value;
+ const confirmNewPassword = document.getElementById("confirmNewPassword").value;
+
+ if(newPassword.length < 6){
+  recoveryMessage.textContent = "La password deve contenere almeno 6 caratteri.";
+  return;
+ }
+
+ if(newPassword !== confirmNewPassword){
+  recoveryMessage.textContent = "Le due password non coincidono.";
+  return;
+ }
+
+ saveNewPassword.disabled = true;
+ saveNewPassword.textContent = "Salvataggio...";
+ recoveryMessage.textContent = "";
+
+ try{
+  const {error} = await supabaseClient.auth.updateUser({
+   password: newPassword
+  });
+
+  if(error) throw error;
+
+  recoveryMessage.textContent = "Password aggiornata correttamente. Ora puoi accedere come amministratore.";
+  recoveryMessage.classList.add("success");
+  recoveryForm.style.display = "none";
+  recoveryDone.style.display = "inline-block";
+
+ }catch(error){
+  console.error("Errore aggiornamento password:",error);
+  recoveryMessage.textContent =
+   "Non è stato possibile aggiornare la password. Il link potrebbe essere scaduto o già utilizzato. Richiedi un nuovo link di recupero.";
+ }finally{
+  saveNewPassword.disabled = false;
+  saveNewPassword.textContent = "Salva nuova password";
+ }
+});
+
+recoveryDone.addEventListener("click",()=>{
+ recoveryForm.style.display = "block";
+ closePasswordRecovery();
+ updateAdminInterface();
+});
+
+async function initializeAuthentication(){
+
+ const {data,error} =
+  await supabaseClient.auth.getSession();
+
+ if(error){
+
+  console.error(error);
+
+  return;
+
+ }
+
+ adminSession = data.session;
+
+ updateAdminInterface();
+
+}
+
+initializeAuthentication();
+
+
+// ==================================================
+// SCENA
+// ==================================================
+
+const container = document.getElementById("scene");
+
+const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x03000a);
+
+scene.fog = new THREE.FogExp2(0x03000a,0.0017);
+
+const camera = new THREE.PerspectiveCamera(
+ 55,
+ innerWidth/innerHeight,
+ 0.1,
+ 1500
+);
+
+camera.position.set(0,0,43);
+camera.lookAt(0,0,0);
+
+const renderer = new THREE.WebGLRenderer({
+ antialias:true,
+ alpha:false
+});
+
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.outputEncoding = THREE.sRGBEncoding;
+
+container.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0x777799,1.1));
+
+const mainLight = new THREE.PointLight(0xffb9e8,2.4,180);
+
+mainLight.position.set(0,0,0);
+
+scene.add(mainLight);
+
+
+// ==================================================
+// GALASSIA
+// ==================================================
+
+const galaxy = new THREE.Group();
+
+scene.add(galaxy);
+
+function makeParticles(count,colorFn,positionFn,size=0.05,opacity=1){
+
+ const positions = new Float32Array(count*3);
+ const colors = new Float32Array(count*3);
+
+ const color = new THREE.Color();
+
+ for(let i=0;i<count;i++){
+
+  const p = positionFn(i);
+
+  positions[i*3] = p.x;
+  positions[i*3+1] = p.y;
+  positions[i*3+2] = p.z;
+
+  color.set(colorFn(i,p));
+
+  colors[i*3] = color.r;
+  colors[i*3+1] = color.g;
+  colors[i*3+2] = color.b;
+
+ }
+
+ const geometry = new THREE.BufferGeometry();
+
+ geometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(positions,3)
+ );
+
+ geometry.setAttribute(
+  "color",
+  new THREE.BufferAttribute(colors,3)
+ );
+
+ const material = new THREE.PointsMaterial({
+  size,
+  vertexColors:true,
+  transparent:true,
+  opacity,
+  depthWrite:false,
+  blending:THREE.AdditiveBlending
+ });
+
+ const points = new THREE.Points(geometry,material);
+
+ galaxy.add(points);
+
+ return points;
+
+}
+
+
+// Bracci della galassia
+
+const arms = 4;
+const galaxyCount = 85000;
+
+makeParticles(
+ galaxyCount,
+ (i,p)=>{
+
+  const t=i/galaxyCount;
+
+  if(t<.24){
+
+   return new THREE.Color(0xffd6a1)
+    .lerp(new THREE.Color(0xff83d5),Math.random()*.5);
+
+  }
+
+  return new THREE.Color(0x8a74ff)
+   .lerp(new THREE.Color(0xffa8d8),Math.random()*.75);
+
+ },
+ (i)=>{
+
+  const arm=i%arms;
+
+  const radius=Math.pow(Math.random(),.62)*15.5;
+
+  const angle=
+   arm*Math.PI*2/arms+
+   radius*.42+
+   (Math.random()-.5)*.55;
+
+  return{
+   x:Math.cos(angle)*radius+(Math.random()-.5)*.65,
+   y:(Math.random()-.5)*1.5*(1-radius/19),
+   z:Math.sin(angle)*radius+(Math.random()-.5)*.65
+  };
+
+ },
+ .045,
+ .95
+);
+
+makeParticles(
+ 35000,
+ ()=>new THREE.Color(0x9b83d8)
+  .lerp(new THREE.Color(0xffb8dc),Math.random()*.5),
+ ()=>{
+
+  const a=Math.random()*Math.PI*2;
+  const r=2+Math.random()*14;
+
+  return{
+   x:Math.cos(a)*r,
+   y:(Math.random()-.5)*.55,
+   z:Math.sin(a)*r
+  };
+
+ },
+ .025,
+ .48
+);
+
+makeParticles(
+ 16000,
+ ()=>new THREE.Color(0x9a6cff)
+  .lerp(new THREE.Color(0xffc6df),Math.random()),
+ ()=>{
+
+  const a=Math.random()*Math.PI*2;
+  const r=15+Math.random()*5;
+
+  return{
+   x:Math.cos(a)*r,
+   y:(Math.random()-.5)*1.7,
+   z:Math.sin(a)*r
+  };
+
+ },
+ .035,
+ .25
+);
+
+
+// Nucleo luminoso
+
+makeParticles(
+ 14000,
+ ()=>new THREE.Color(0xffd9b0)
+  .lerp(new THREE.Color(0xff78c8),Math.random()*.45),
+ ()=>{
+
+  const u=Math.random()*Math.PI*2;
+  const v=Math.acos(2*Math.random()-1);
+  const r=Math.random()*2.2;
+
+  return{
+   x:r*Math.sin(v)*Math.cos(u),
+   y:r*Math.cos(v),
+   z:r*Math.sin(v)*Math.sin(u)
+  };
+
+ },
+ .065,
+ 1
+);
+
+const coreLight = new THREE.PointLight(0xffa9dc,4,38);
+
+galaxy.add(coreLight);
+
+
+// Anelli della galassia
+
+for(let i=0;i<12;i++){
+
+ const ring = new THREE.Mesh(
+  new THREE.TorusGeometry(
+   3.2+i*.82,
+   .012+(i%3)*.006,
+   6,
+   220
+  ),
+  new THREE.MeshBasicMaterial({
+   color:i%2?0x9b75ff:0xffb9df,
+   transparent:true,
+   opacity:.15-i*.006
+  })
+ );
+
+ ring.rotation.x = Math.PI/2;
+ ring.rotation.y = 0;
+
+ galaxy.add(ring);
+
+}
+
+galaxy.rotation.set(0,0,0);
+
+
+// ==================================================
+// CAMPO STELLARE
+// ==================================================
+
+const starPositions = new Float32Array(20000*3);
+const starColors = new Float32Array(20000*3);
+
+const palette = [
+ new THREE.Color(0xffffff),
+ new THREE.Color(0xb8a5ff),
+ new THREE.Color(0xffc9e7),
+ new THREE.Color(0x8edbff)
+];
+
+for(let i=0;i<20000;i++){
+
+ const radius=100+Math.random()*430;
+ const theta=Math.random()*Math.PI*2;
+ const phi=Math.acos(2*Math.random()-1);
+
+ starPositions[i*3]=radius*Math.sin(phi)*Math.cos(theta);
+ starPositions[i*3+1]=radius*Math.cos(phi);
+ starPositions[i*3+2]=radius*Math.sin(phi)*Math.sin(theta);
+
+ const c=palette[Math.floor(Math.random()*palette.length)];
+
+ starColors[i*3]=c.r;
+ starColors[i*3+1]=c.g;
+ starColors[i*3+2]=c.b;
+
+}
+
+const starGeo = new THREE.BufferGeometry();
+
+starGeo.setAttribute(
+ "position",
+ new THREE.BufferAttribute(starPositions,3)
+);
+
+starGeo.setAttribute(
+ "color",
+ new THREE.BufferAttribute(starColors,3)
+);
+
+const stars = new THREE.Points(
+ starGeo,
+ new THREE.PointsMaterial({
+  size:.65,
+  vertexColors:true,
+  transparent:true,
+  opacity:.85,
+  depthWrite:false
+ })
+);
+
+scene.add(stars);
+
+
+// ==================================================
+// NEBULOSE
+// ==================================================
+
+for(let n=0;n<5;n++){
+
+ const cloudGeo=new THREE.BufferGeometry();
+
+ const arr=new Float32Array(1800*3);
+
+ const cx=(Math.random()-.5)*150;
+ const cy=(Math.random()-.5)*90;
+ const cz=-50-Math.random()*100;
+
+ for(let i=0;i<1800;i++){
+
+  arr[i*3]=cx+(Math.random()-.5)*38;
+  arr[i*3+1]=cy+(Math.random()-.5)*24;
+  arr[i*3+2]=cz+(Math.random()-.5)*15;
+
+ }
+
+ cloudGeo.setAttribute(
+  "position",
+  new THREE.BufferAttribute(arr,3)
+ );
+
+ const cloud = new THREE.Points(
+  cloudGeo,
+  new THREE.PointsMaterial({
+   color:[0x593a9d,0x4d397e,0x7d356f,0x315a91,0x633b9a][n],
+   size:1.5,
+   transparent:true,
+   opacity:.12,
+   depthWrite:false,
+   blending:THREE.AdditiveBlending
+  })
+ );
+
+ scene.add(cloud);
+
+}
+
+
+// ==================================================
+// STELLE CADENTI
+// ==================================================
+
+const shootingStars=[];
+
+function createShootingStar(){
+
+ const group=new THREE.Group();
+
+ const material=new THREE.MeshBasicMaterial({
+  color:0xdccaff
+ });
+
+ const head=new THREE.Mesh(
+  new THREE.SphereGeometry(.12,8,8),
+  material
+ );
+
+ const tail=new THREE.Mesh(
+  new THREE.CylinderGeometry(.015,.07,4,6),
+  new THREE.MeshBasicMaterial({
+   color:0x9b82ff,
+   transparent:true,
+   opacity:.65
+  })
+ );
+
+ tail.rotation.z=Math.PI/2;
+ tail.position.x=-2;
+
+ group.add(head,tail);
+
+ group.position.set(
+  (Math.random()-.5)*80,
+  15+Math.random()*20,
+  -25-Math.random()*35
+ );
+
+ group.userData={
+  vx:-.35-Math.random()*.3,
+  vy:-.18-Math.random()*.12,
+  life:0
+ };
+
+ scene.add(group);
+
+ shootingStars.push(group);
+
+}
+
+setInterval(()=>{
+ if(Math.random()>.25)createShootingStar();
+},2400);
+
+
+// ==================================================
+// CUORE ROSSO
+// ==================================================
+
+const heartGroup=new THREE.Group();
+
+scene.add(heartGroup);
+
+const heartCount=16000;
+
+const heartPos=new Float32Array(heartCount*3);
+const heartCol=new Float32Array(heartCount*3);
+
+const heartColor=new THREE.Color(0xff174d);
+
+for(let i=0;i<heartCount;i++){
+
+ const t=Math.random()*Math.PI*2;
+ const fill=Math.sqrt(Math.random());
+
+ const x=16*Math.pow(Math.sin(t),3);
+
+ const y=13*Math.cos(t)
+  -5*Math.cos(2*t)
+  -2*Math.cos(3*t)
+  -Math.cos(4*t);
+
+ heartPos[i*3]=x*.17*fill;
+ heartPos[i*3+1]=y*.17*fill+7.3;
+ heartPos[i*3+2]=(Math.random()-.5)*1.25;
+
+ heartCol[i*3]=heartColor.r;
+ heartCol[i*3+1]=heartColor.g;
+ heartCol[i*3+2]=heartColor.b;
+
+}
+
+const heartGeo=new THREE.BufferGeometry();
+
+heartGeo.setAttribute(
+ "position",
+ new THREE.BufferAttribute(heartPos,3)
+);
+
+heartGeo.setAttribute(
+ "color",
+ new THREE.BufferAttribute(heartCol,3)
+);
+
+const heartPoints=new THREE.Points(
+ heartGeo,
+ new THREE.PointsMaterial({
+  size:.055,
+  vertexColors:true,
+  transparent:true,
+  opacity:.95,
+  depthWrite:false,
+  blending:THREE.AdditiveBlending
+ })
+);
+
+heartGroup.add(heartPoints);
+
+const heartGlow=new THREE.PointLight(0xff174d,1.2,20);
+
+heartGlow.position.set(0,7.3,0);
+
+heartGroup.add(heartGlow);
+
+
+// ==================================================
+// ETICHETTE DEI PIANETI
+// ==================================================
+
+function createLabel(text){
+
+ const canvas=document.createElement("canvas");
+
+ canvas.width=768;
+ canvas.height=220;
+
+ const ctx=canvas.getContext("2d");
+
+ ctx.clearRect(0,0,768,220);
+
+ const gradient=ctx.createLinearGradient(0,0,768,220);
+
+ gradient.addColorStop(0,"rgba(8,12,38,0.90)");
+ gradient.addColorStop(.5,"rgba(18,15,48,0.96)");
+ gradient.addColorStop(1,"rgba(8,12,38,0.90)");
+
+ ctx.fillStyle=gradient;
+
+ roundedRect(ctx,12,12,744,196,35);
+
+ ctx.fill();
+
+ ctx.strokeStyle="rgba(255,215,150,0.9)";
+ ctx.lineWidth=4;
+
+ ctx.stroke();
+
+ ctx.textAlign="center";
+ ctx.textBaseline="middle";
+
+ ctx.fillStyle="#ffffff";
+ ctx.font="bold 29px Georgia";
+
+ ctx.shadowColor="#ffffff";
+ ctx.shadowBlur=7;
+
+ const words=text.split(" ");
+
+ const lines=[];
+
+ let line="";
+
+ for(const word of words){
+
+  const test=line?line+" "+word:word;
+
+  if(ctx.measureText(test).width>690&&line){
+
+   lines.push(line);
+   line=word;
+
+  }else{
+
+   line=test;
+
+  }
+
+ }
+
+ if(line)lines.push(line);
+
+ const lineHeight=43;
+
+ const startY=110-((lines.length-1)*lineHeight)/2;
+
+ lines.forEach((part,i)=>{
+  ctx.fillText(part,384,startY+i*lineHeight);
+ });
+
+ const texture=new THREE.CanvasTexture(canvas);
+
+ const sprite=new THREE.Sprite(
+  new THREE.SpriteMaterial({
+   map:texture,
+   transparent:true,
+   depthWrite:false
+  })
+ );
+
+ sprite.scale.set(4.6,1.32,1);
+
+ return sprite;
+
+}
+
+function roundedRect(ctx,x,y,w,h,r){
+
+ ctx.beginPath();
+
+ ctx.moveTo(x+r,y);
+ ctx.lineTo(x+w-r,y);
+ ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+
+ ctx.lineTo(x+w,y+h-r);
+ ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+
+ ctx.lineTo(x+r,y+h);
+ ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+
+ ctx.lineTo(x,y+r);
+ ctx.quadraticCurveTo(x,y,x+r,y);
+
+ ctx.closePath();
+
+}
+
+
+// ==================================================
+// DEDICHE
+// ==================================================
+
+const dedications=[
+ "A te... che sei la nostra casa",
+ "A te... e a tutto ciò che sei stata e sarai per sempre",
+ "A te... per tutto l'amore che dai al mondo",
+ "A te... a tutta la tua forza",
+ "A te... che sei per sempre parte di noi",
+ "A te... dolce e forte da sempre",
+ "A te... che non ci lasci mai da soli",
+ "A te... che sei luce nel buio"
+];
+
+const planetColors=[
+ 0xff8bba,
+ 0x79baff,
+ 0xf6c879,
+ 0x9e8cff,
+ 0x83e0c4,
+ 0xff9d78,
+ 0xb5a0ff,
+ 0xffd2ee
+];
+
+const planetSizes=[
+ .72,.88,.68,.82,.75,.95,.7,.84
+];
+
+const planets=[];
+
+const planetGroup=new THREE.Group();
+
+scene.add(planetGroup);
+
+
+// TEXTURE LUMINOSA
+
+function createGlowTexture(color){
+
+ const c=document.createElement("canvas");
+
+ c.width=128;
+ c.height=128;
+
+ const x=c.getContext("2d");
+
+ const g=x.createRadialGradient(
+  64,64,2,
+  64,64,62
+ );
+
+ const col="#"+color.toString(16).padStart(6,"0");
+
+ g.addColorStop(0,col);
+ g.addColorStop(.25,col+"99");
+ g.addColorStop(1,"#00000000");
+
+ x.fillStyle=g;
+ x.fillRect(0,0,128,128);
+
+ return new THREE.CanvasTexture(c);
+
+}
+
+
+// CREAZIONE DEGLI 8 PIANETI
+
+for(let i=0;i<8;i++){
+
+ const angle=i/8*Math.PI*2;
+
+ const radius=20+(i%3)*2.2;
+
+ const material=new THREE.MeshStandardMaterial({
+  color:planetColors[i],
+  roughness:.55,
+  metalness:.12,
+  emissive:planetColors[i],
+  emissiveIntensity:.13
+ });
+
+ const mesh=new THREE.Mesh(
+  new THREE.SphereGeometry(planetSizes[i],32,32),
+  material
+ );
+
+ mesh.position.set(
+  Math.cos(angle)*radius,
+  Math.sin(angle)*radius*.43-1,
+  Math.sin(angle)*radius*.55
+ );
+
+ mesh.userData={
+  index:i,
+  angle,
+  radius
+ };
+
+ planetGroup.add(mesh);
+
+ const glow=new THREE.Sprite(
+  new THREE.SpriteMaterial({
+   map:createGlowTexture(planetColors[i]),
+   transparent:true,
+   blending:THREE.AdditiveBlending,
+   depthWrite:false
+  })
+ );
+
+ glow.scale.set(3.3,3.3,1);
+
+ mesh.add(glow);
+
+ const label=createLabel(dedications[i]);
+
+ label.position.set(0,2.1,0);
+
+ mesh.add(label);
+
+ const orbit=new THREE.Mesh(
+  new THREE.TorusGeometry(radius,.012,4,180),
+  new THREE.MeshBasicMaterial({
+   color:planetColors[i],
+   transparent:true,
+   opacity:.12
+  })
+ );
+
+ orbit.rotation.x=Math.PI/2.55;
+
+ orbit.position.y=-1;
+
+ planetGroup.add(orbit);
+
+ planets.push(mesh);
+
+}
+
+
+// ==================================================
+// GESTIONE FOTO CON SUPABASE
+// ==================================================
+
+const modal=document.getElementById("photoModal");
+
+const preview=document.getElementById("photoPreview");
+
+const modalTitle=document.getElementById("modalTitle");
+
+const fileInput=document.getElementById("fileInput");
+
+let selectedPlanet=-1;
+
+let photoExists=false;
+
+
+// Ogni pianeta ha un'immagine JPEG con nome fisso.
+// Questo permette di recuperare sempre la stessa foto.
+
+function getPhotoPath(index){
+
+ return "pianeta-"+(index+1)+".jpg";
+
+}
+
+
+// Recupera l'indirizzo pubblico della fotografia.
+
+function getPublicPhotoUrl(index){
+
+ const {data} =
+  supabaseClient.storage
+   .from(BUCKET)
+   .getPublicUrl(getPhotoPath(index));
+
+ return data.publicUrl;
+
+}
+
+
+// Mostra la fotografia del pianeta.
+
+function loadPlanetPhoto(index){
+
+ photoExists=false;
+
+ preview.style.display="none";
+
+ preview.removeAttribute("src");
+
+ updateRemoveButton();
+
+ const url =
+  getPublicPhotoUrl(index)+"?v="+Date.now();
+
+ preview.onload=()=>{
+
+  photoExists=true;
+
+  preview.style.display="block";
+
+  updateRemoveButton();
+
+ };
+
+ preview.onerror=()=>{
+
+  photoExists=false;
+
+  preview.style.display="none";
+
+  preview.removeAttribute("src");
+
+  updateRemoveButton();
+
+ };
+
+ preview.src=url;
+
+}
+
+
+// Apertura del pianeta.
+
+function openPlanet(index){
+
+ selectedPlanet=index;
+
+ modalTitle.textContent=
+  "Il nostro ricordo";
+
+ modal.classList.add("open");
+
+ loadPlanetPhoto(index);
+
+ updateAdminInterface();
+
+}
+
+
+// ==================================================
+// CONVERSIONE DELLE FOTO
+// ==================================================
+
+// Convertiamo le immagini in JPEG per avere un formato
+// unico e un nome fisso per ogni pianeta.
+
+async function convertToJpeg(file){
+
+ const bitmap=await createImageBitmap(file);
+
+ const maxDimension=1800;
+
+ const scale=Math.min(
+  1,
+  maxDimension/Math.max(bitmap.width,bitmap.height)
+ );
+
+ const width=Math.round(bitmap.width*scale);
+
+ const height=Math.round(bitmap.height*scale);
+
+ const canvas=document.createElement("canvas");
+
+ canvas.width=width;
+ canvas.height=height;
+
+ const ctx=canvas.getContext("2d");
+
+ ctx.fillStyle="#ffffff";
+
+ ctx.fillRect(0,0,width,height);
+
+ ctx.drawImage(bitmap,0,0,width,height);
+
+ bitmap.close();
+
+ const blob=await new Promise(resolve=>{
+
+  canvas.toBlob(
+   resolve,
+   "image/jpeg",
+   .88
+  );
+
+ });
+
+ if(!blob){
+
+  throw new Error("Conversione immagine non riuscita.");
+
+ }
+
+ return blob;
+
+}
+
+
+// ==================================================
+// CARICAMENTO FOTO
+// ==================================================
+
+choosePhoto.addEventListener("click",()=>{
+
+ if(!adminSession){
+
+  alert("Devi accedere come amministratore.");
+
+  return;
+
+ }
+
+ fileInput.click();
+
+});
+
+
+fileInput.addEventListener("change",async e=>{
+
+ const file=e.target.files&&e.target.files[0];
+
+ if(!file||selectedPlanet<0)return;
+
+ if(!adminSession){
+
+  alert("Non hai i permessi per caricare fotografie.");
+
+  fileInput.value="";
+
+  return;
+
+ }
+
+ if(!file.type.startsWith("image/")){
+
+  alert("Seleziona un'immagine valida.");
+
+  fileInput.value="";
+
+  return;
+
+ }
+
+ const button=choosePhoto;
+
+ button.disabled=true;
+
+ button.textContent="Caricamento...";
+
+ try{
+
+  const jpeg=await convertToJpeg(file);
+
+  const path=getPhotoPath(selectedPlanet);
+
+  const {error} =
+   await supabaseClient.storage
+    .from(BUCKET)
+    .upload(path,jpeg,{
+     upsert:true,
+     contentType:"image/jpeg",
+     cacheControl:"0"
+    });
+
+  if(error)throw error;
+
+  alert("Fotografia salvata correttamente!");
+
+  loadPlanetPhoto(selectedPlanet);
+
+ }catch(error){
+
+  console.error(error);
+
+  alert(
+   "Non è stato possibile caricare la fotografia. Controlla la connessione e i permessi Supabase."
+  );
+
+ }finally{
+
+  button.disabled=false;
+
+  button.textContent="Aggiungi / cambia foto";
+
+  fileInput.value="";
+
+ }
+
+});
+
+
+// ==================================================
+// ELIMINAZIONE FOTO
+// ==================================================
+
+removePhoto.addEventListener("click",async()=>{
+
+ if(!adminSession||selectedPlanet<0)return;
+
+ if(!confirm("Vuoi davvero eliminare questa fotografia?"))return;
+
+ removePhoto.disabled=true;
+
+ try{
+
+  const {error} =
+   await supabaseClient.storage
+    .from(BUCKET)
+    .remove([getPhotoPath(selectedPlanet)]);
+
+  if(error)throw error;
+
+  photoExists=false;
+
+  preview.removeAttribute("src");
+
+  preview.style.display="none";
+
+  updateRemoveButton();
+
+  alert("Fotografia eliminata.");
+
+ }catch(error){
+
+  console.error(error);
+
+  alert("Non è stato possibile eliminare la fotografia.");
+
+ }finally{
+
+  removePhoto.disabled=false;
+
+ }
+
+});
+
+
+// ==================================================
+// CHIUSURA MODALE
+// ==================================================
+
+document.getElementById("closeModal").addEventListener("click",()=>{
+
+ modal.classList.remove("open");
+
+});
+
+modal.addEventListener("click",e=>{
+
+ if(e.target===modal){
+
+  modal.classList.remove("open");
+
+ }
+
+});
+
+
+// ==================================================
+// INTERAZIONE E HOVER PIANETI
+// ==================================================
+
+const raycaster=new THREE.Raycaster();
+
+raycaster.params.Points.threshold=.2;
+
+const pointer=new THREE.Vector2();
+
+let hoveredPlanet=null;
+
+let dragging=false;
+
+let lastX=0;
+let lastY=0;
+
+let downX=0;
+let downY=0;
+
+let rotX=0;
+let rotY=0;
+
+
+// CONTROLLO DEL MOUSE
+
+renderer.domElement.addEventListener("pointermove",e=>{
+
+ const rect=renderer.domElement.getBoundingClientRect();
+
+ pointer.x=((e.clientX-rect.left)/rect.width)*2-1;
+
+ pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;
+
+ if(!dragging){
+
+  raycaster.setFromCamera(pointer,camera);
+
+  const intersections=raycaster.intersectObjects(planets,false);
+
+  hoveredPlanet=intersections.length
+   ? intersections[0].object
+   : null;
+
+ }
+
+ if(dragging){
+
+  const dx=e.clientX-lastX;
+
+  const dy=e.clientY-lastY;
+
+  rotY+=dx*.005;
+
+  rotX+=dy*.004;
+
+  rotX=Math.max(-.8,Math.min(.8,rotX));
+
+  lastX=e.clientX;
+
+  lastY=e.clientY;
+
+ }
+
+});
+
+renderer.domElement.addEventListener("pointerleave",()=>{
+
+ hoveredPlanet=null;
+
+});
+
+renderer.domElement.addEventListener("pointerdown",e=>{
+
+ dragging=true;
+
+ lastX=e.clientX;
+ lastY=e.clientY;
+
+ downX=e.clientX;
+ downY=e.clientY;
+
+ renderer.domElement.setPointerCapture(e.pointerId);
+
+});
+
+renderer.domElement.addEventListener("pointerup",e=>{
+
+ if(!dragging)return;
+
+ dragging=false;
+
+ if(Math.hypot(e.clientX-downX,e.clientY-downY)<7){
+
+  const rect=renderer.domElement.getBoundingClientRect();
+
+  pointer.x=((e.clientX-rect.left)/rect.width)*2-1;
+
+  pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;
+
+  raycaster.setFromCamera(pointer,camera);
+
+  const hits=raycaster.intersectObjects(planets,false);
+
+  if(hits.length){
+
+   openPlanet(hits[0].object.userData.index);
+
+  }
+
+ }
+
+});
+
+renderer.domElement.addEventListener("wheel",e=>{
+
+ camera.position.z=Math.max(
+  24,
+  Math.min(85,camera.position.z+e.deltaY*.035)
+ );
+
+},{passive:true});
+
+
+// ==================================================
+// PULSANTI ZOOM
+// ==================================================
+
+document.getElementById("zoomIn").onclick=()=>{
+
+ camera.position.z=Math.max(24,camera.position.z-4);
+
+};
+
+document.getElementById("zoomOut").onclick=()=>{
+
+ camera.position.z=Math.min(85,camera.position.z+4);
+
+};
+
+
+// ==================================================
+// RESET VISUALE
+// ==================================================
+
+document.getElementById("reset").onclick=()=>{
+
+ camera.position.set(0,0,43);
+
+ camera.lookAt(0,0,0);
+
+ rotX=0;
+ rotY=0;
+
+};
+
+
+// ==================================================
+// ENTRATA NELL'UNIVERSO
+// ==================================================
+
+document.getElementById("enterBtn").addEventListener("click",()=>{
+
+ document.getElementById("intro").classList.add("hide");
+
+ document.getElementById("heading").classList.add("show");
+
+ document.getElementById("controls").classList.add("show");
+
+ document.getElementById("hint").classList.add("show");
+
+ startMusic();
+
+});
+
+
+// ==================================================
+// ANIMAZIONE
+// ==================================================
+
+const clock=new THREE.Clock();
+
+function animate(){
+
+ requestAnimationFrame(animate);
+
+ const t=clock.getElapsedTime();
+
+
+ // Rotazione della galassia
+
+ galaxy.rotation.y+=.0008;
+
+ galaxy.rotation.x=0;
+ galaxy.rotation.z=0;
+
+
+ // Cuore pulsante
+
+ heartGroup.scale.setScalar(
+  1+Math.sin(t*2.2)*.035
+ );
+
+ heartGlow.intensity=
+  1.2+Math.sin(t*2.2)*.35;
+
+
+ // Movimento dei pianeti
+
+ planetGroup.rotation.y+=.0009;
+
+ planets.forEach((p,i)=>{
+
+  p.rotation.y+=.003;
+
+  const targetScale=p===hoveredPlanet?1.35:1;
+
+  const newScale=
+   p.scale.x+(targetScale-p.scale.x)*.16;
+
+  p.scale.setScalar(newScale);
+
+
+  // Movimento esattamente sulle orbite
+
+  const a =
+   p.userData.angle+
+   t*(.025+(i%3)*.004);
+
+  const orbitInclination=Math.PI/2.55;
+
+  p.position.x=
+   Math.cos(a)*p.userData.radius;
+
+  p.position.y=
+   -1+Math.sin(a)*p.userData.radius*Math.cos(orbitInclination);
+
+  p.position.z=
+   Math.sin(a)*p.userData.radius*Math.sin(orbitInclination);
+
+ });
+
+
+ // Stelle
+
+ stars.rotation.y+=.000025;
+
+
+ // Stelle cadenti
+
+ shootingStars.forEach((s,i)=>{
+
+  s.position.x+=s.userData.vx;
+
+  s.position.y+=s.userData.vy;
+
+  s.userData.life++;
+
+  if(s.userData.life>90){
+
+   scene.remove(s);
+
+   shootingStars.splice(i,1);
+
+  }
+
+ });
+
+
+ // Rotazione tramite trascinamento
+
+ scene.rotation.y+=(rotY-scene.rotation.y)*.035;
+
+ scene.rotation.x+=(rotX-scene.rotation.x)*.035;
+
+
+ renderer.render(scene,camera);
+
+}
+
+animate();
+
+
+// ==================================================
+// RIDIMENSIONAMENTO FINESTRA
+// ==================================================
+
+addEventListener("resize",()=>{
+
+ camera.aspect=innerWidth/innerHeight;
+
+ camera.updateProjectionMatrix();
+
+ renderer.setSize(innerWidth,innerHeight);
+
+});
+
+})();
+</script>
+
+</body>
+</html>
